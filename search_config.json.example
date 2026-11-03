@@ -1,0 +1,18 @@
+{
+  "_help": "Copy to search_config.json (or run /setup in Claude Code). All *_regex values are case-insensitive Python regexes.",
+  "role_label": "Python",
+  "_role_regex": "What a matching post's title (or, for a neutral title like 'Backend Engineer', its description) must mention.",
+  "role_regex": "\\bpython\\b|\\bdjango\\b|\\bfastapi\\b|\\bflask\\b",
+  "_other_lang_regex": "Other languages: a neutral-title post is kept only if role_regex matches at least as often as this.",
+  "other_lang_regex": "\\b(java|kotlin|go|golang|php|ruby|node\\.?js|typescript|c#|\\.net|rust|scala)\\b|c\\+\\+",
+  "_other_stack_title_regex": "A title matching this (and not role_regex) is another stack or a non-dev role: skipped.",
+  "other_stack_title_regex": "\\b(java|kotlin|go|golang|php|laravel|ruby|rails|node\\.?js|\\.net|c#|rust|react|frontend|front-end|ios|android|flutter|devops|sre|sales|marketing)\\b|c\\+\\+",
+  "_home_country": "Where you live. The LLM screen rejects posts limited to a country list that doesn't include it.",
+  "home_country": "Poland",
+  "_home_location_regex": "On-site/hybrid posts are kept only if their location matches this (include local-language spellings).",
+  "home_location_regex": "poland|warsaw|krak[oó]w|польш|варшав",
+  "_restricted_regex": "Optional. Post text that means 'residents/citizens of somewhere else only'. Leave empty to rely on the LLM screen.",
+  "restricted_regex": "EEA only|только (?:для )?(?:граждан|резидент)|гражданств\\w* (?:РФ|России)|только (?:из |в )?(?:РФ|России)",
+  "_cv_extra_rules": "Optional. Extra hard rules for the CV/cover-letter writer about your profile.",
+  "cv_extra_rules": []
+}

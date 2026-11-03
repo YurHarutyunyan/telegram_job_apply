@@ -1,0 +1,6 @@
+{
+ "channels": [
+  "somechannel",
+  {"name": "busychannel", "pages": 45}
+ ]
+}

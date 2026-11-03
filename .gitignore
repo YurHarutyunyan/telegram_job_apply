@@ -1,0 +1,21 @@
+# secrets — never commit
+.env
+.telegram.session
+.telegram.session-journal
+
+.venv/
+__pycache__/
+*.pyc
+.backend
+
+# personal data — created locally by /setup, never commit
+profile.md
+search_config.json
+telegram_channels.json
+telegram_jobs.json
+telegram_log.json
+screened_jobs.json
+cv/**
+!cv/tailored/
+!cv/telegram/
+!cv/*/.gitkeep
