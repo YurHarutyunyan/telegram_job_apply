@@ -1,4 +1,4 @@
-# telegram-autoapply
+# telegram_job_apply
 
 Finds developer job posts in public Telegram channels and applies to them. You choose the role
 (Java, Python, Go, ...) and say where you live; it keeps posts that fit, writes a CV and a cover
@@ -12,11 +12,15 @@ first run.
 
 ## Quick setup with Claude Code
 
+You need [Claude Code](https://claude.com/claude-code) installed and logged in, Python 3.10+ and
+Google Chrome. Then paste this into a terminal. It clones the repo and opens Claude Code with
+`/setup` already running:
+
+```bash
+git clone https://github.com/YurHarutyunyan/telegram_job_apply.git && cd telegram_job_apply && claude "/setup"
 ```
-git clone <this repo> && cd telegram-autoapply
-claude
-> /setup
-```
+
+Already cloned? From the repo folder, run `claude "/setup"`, or type `/setup` inside Claude Code.
 
 `/setup` walks you through everything below: it checks the prerequisites, installs the Python
 packages, builds `profile.md` from your existing CV (and asks you to confirm it), writes

@@ -1,5 +1,5 @@
 ---
-description: Set up telegram-autoapply step by step — dependencies, profile, search config, Gmail, Telegram API (not the channel list)
+description: Set up telegram_job_apply step by step — dependencies, profile, search config, Gmail, Telegram API (not the channel list)
 argument-hint: [optional: step number to start from, e.g. 4]
 ---
 
