@@ -84,6 +84,20 @@ Or without the Telegram Web part:
 .venv/bin/python scripts/send_telegram_emails.py --dry-run    # see what would be emailed
 ```
 
+### Dashboard
+
+```
+.venv/bin/python scripts/dashboard.py        # opens http://127.0.0.1:8765
+```
+
+A local page with four tabs: **New postings** (not applied yet), **Applied** (history, grouped by day),
+**Duplicates** (cross-posts of a vacancy you already applied to: same recipient, same title and a
+nearly identical post text) and **Other** (closed, rejected, needs review). Email jobs have an
+**Apply** button that tailors the CV if needed and sends the email (needs Gmail in `.env`); link and
+Telegram jobs open in your browser, and **Mark applied** logs them. **Fetch new posts** reads the
+channels again. It listens on 127.0.0.1 only and runs the same scripts as the CLI, so
+`telegram_log.json` stays the record of what was sent.
+
 ## Flow
 
 ```

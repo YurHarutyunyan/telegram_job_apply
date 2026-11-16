@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Applications</title>
+<style>
+:root {
+  --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a64; --line: #e3e1da;
+  --accent: #2f5bd3; --accent-ink: #fff; --ok: #1f7a4a; --ok-bg: #e3f3ea; --warn: #8a5a00; --warn-bg: #fbf0d6;
+  --bad: #a3302a; --bad-bg: #f8e2e0; --chip: #efede6; --shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151514; --panel: #1e1e1c; --ink: #ecebe6; --muted: #9c9a92; --line: #2e2d2a;
+    --accent: #7d9cf0; --accent-ink: #0f1220; --ok: #6fd19c; --ok-bg: #173225; --warn: #e9b955; --warn-bg: #352a12;
+    --bad: #ef8a83; --bad-bg: #3a1c1a; --chip: #2a2926; --shadow: none;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.bar { max-width: 1180px; margin: 0 auto; padding: 14px 16px 0; }
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+h1 { font-size: 18px; margin: 0; font-weight: 650; letter-spacing: -.01em; }
+.stats { color: var(--muted); font-size: 13px; }
+.spacer { flex: 1; }
+.tabs { display: flex; gap: 2px; margin-top: 12px; overflow-x: auto; }
+.tab { border: 0; background: none; color: var(--muted); padding: 9px 12px; font: inherit; font-weight: 550;
+  border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .n { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px; border-radius: 10px;
+  background: var(--chip); color: var(--muted); font-size: 12px; text-align: center; }
+.filters { display: flex; gap: 8px; padding: 12px 0; flex-wrap: wrap; }
+input[type=search], select { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 10px; }
+input[type=search] { flex: 1; min-width: 200px; }
+button.btn { font: inherit; font-weight: 550; border-radius: 8px; padding: 7px 12px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); white-space: nowrap; }
+button.btn:hover:not(:disabled) { border-color: var(--muted); }
+.btn.primary, a.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button.btn:disabled { opacity: .5; cursor: not-allowed; }
+a.btn { text-decoration: none; display: inline-block; font-weight: 550; border-radius: 8px; padding: 7px 12px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink); white-space: nowrap; }
+main { max-width: 1180px; margin: 0 auto; padding: 14px 16px 120px; }
+.list { display: grid; gap: 10px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+.row { display: flex; gap: 14px; align-items: flex-start; }
+.main { flex: 1; min-width: 0; }
+.title { font-weight: 650; font-size: 15px; margin: 0 0 2px; overflow-wrap: anywhere; }
+.company { color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 12px; }
+.chip { background: var(--chip); color: var(--muted); padding: 2px 8px; border-radius: 6px; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip a { color: inherit; }
+.note { margin-top: 8px; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.actions { display: flex; flex-direction: column; gap: 6px; align-items: stretch; min-width: 150px; }
+.links { display: flex; gap: 12px; margin-top: 8px; font-size: 13px; flex-wrap: wrap; }
+.links a { color: var(--accent); text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+details { margin-top: 8px; }
+summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+pre.desc { white-space: pre-wrap; font: 13px/1.5 inherit; font-family: inherit; margin: 8px 0 0; padding: 10px 12px;
+  background: var(--bg); border-radius: 8px; max-height: 320px; overflow: auto; }
+.empty { text-align: center; color: var(--muted); padding: 60px 0; }
+.group { font-size: 12px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin: 14px 2px 2px; }
+#drawer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--panel); border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(0,0,0,.08); transform: translateY(100%); transition: transform .2s; }
+#drawer.open { transform: none; }
+#drawer .head { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 10px 16px; }
+#drawer .label { font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#drawer pre { max-width: 1180px; margin: 0 auto; padding: 0 16px 14px; max-height: 34vh; overflow: auto;
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; color: var(--muted); }
+.toast { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 20; background: var(--ink); color: var(--bg);
+  padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; }
+.toast.show { opacity: 1; }
+@media (max-width: 680px) {
+  .row { flex-direction: column; }
+  .actions { flex-direction: row; flex-wrap: wrap; min-width: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="top">
+      <h1>Job Applications</h1>
+      <span class="stats" id="stats"></span>
+      <span class="spacer"></span>
+      <button class="btn" id="fetchBtn" title="Read the Telegram channels for new posts">Fetch new posts</button>
+      <button class="btn" id="reloadBtn" title="Reload from disk">Reload</button>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <div class="filters">
+      <input type="search" id="q" placeholder="Search title, company, recipient, channel…">
+      <select id="method">
+        <option value="">All methods</option>
+        <option value="email">Email</option>
+        <option value="telegram">Telegram DM</option>
+        <option value="link">Link</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main><div class="list" id="list"></div></main>
+
+<div id="drawer" aria-live="polite">
+  <div class="head">
+    <span class="label" id="taskLabel"></span>
+    <span class="chip" id="taskState"></span>
+    <button class="btn" id="taskClose">Close</button>
+  </div>
+  <pre id="taskOut"></pre>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TABS = [
+  { key: "new", label: "New postings" },
+  { key: "applied", label: "Applied" },
+  { key: "duplicates", label: "Duplicates" },
+  { key: "other", label: "Other" },
+];
+const METHOD_LABEL = { email: "Email", telegram: "Telegram DM", link: "Link" };
+const STATUS_CHIP = { applied: "ok", new: "", duplicate: "warn", closed: "bad", rejected: "bad", needs_manual_review: "warn" };
+
+let state = { jobs: [] };
+let tab = "new";
+let busy = false;
+let pollTimer = null;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDate = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+};
+
+try { tab = localStorage.getItem("tab") || tab; } catch {}
+
+async function api(path, body) {
+  const res = await fetch(path, body === undefined ? {} : {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || res.statusText);
+  return data;
+}
+
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 3200);
+}
+
+async function load() {
+  state = await api("/api/state");
+  busy = state.busy || !!pollTimer;
+  render();
+}
+
+function counts() {
+  const c = { new: 0, applied: 0, duplicates: 0, other: 0 };
+  for (const j of state.jobs) c[j.bucket]++;
+  return c;
+}
+
+function renderTabs() {
+  const c = counts();
+  $("tabs").innerHTML = TABS.map((t) =>
+    `<button class="tab" role="tab" data-tab="${t.key}" aria-selected="${t.key === tab}">${t.label}<span class="n">${c[t.key]}</span></button>`).join("");
+  const today = new Date().toISOString().slice(0, 10);
+  const appliedToday = state.jobs.filter((j) => j.status === "applied" && (j.at || "").startsWith(today)).length;
+  $("stats").textContent = `${state.jobs.length} jobs · ${c.applied} applied (${appliedToday} today)`;
+}
+
+function filtered() {
+  const q = $("q").value.trim().toLowerCase();
+  const m = $("method").value;
+  let rows = state.jobs.filter((j) => j.bucket === tab);
+  if (m) rows = rows.filter((j) => j.method === m);
+  if (q) rows = rows.filter((j) => [j.title, j.company, j.target, j.channel, j.note, j.id].join(" ").toLowerCase().includes(q));
+  const key = tab === "applied" || tab === "other" ? (j) => j.at || "" : (j) => j.postedAt || "";
+  return rows.sort((a, b) => key(b).localeCompare(key(a)));
+}
+
+function actionsFor(j) {
+  const out = [];
+  const ready = j.files && j.files.cv && j.files.cover;
+  if (j.bucket === "new") {
+    if (j.method === "email") {
+      out.push(`<button class="btn primary" data-act="apply" data-id="${esc(j.id)}" ${busy ? "disabled" : ""}
+        title="${ready ? "Send the email with the tailored CV + cover letter" : "Tailor the CV + cover letter, then send"}">Apply${ready ? "" : " (tailor + send)"}</button>`);
+    } else if (j.targetUrl) {
+      out.push(`<a class="btn primary" href="${esc(j.targetUrl)}" target="_blank" rel="noopener">${j.method === "telegram" ? "Open chat" : "Open & apply"}</a>`);
+      out.push(`<button class="btn" data-act="mark" data-status="applied" data-id="${esc(j.id)}">Mark applied</button>`);
+    }
+    if (!ready) out.push(`<button class="btn" data-act="prepare" data-id="${esc(j.id)}" ${busy ? "disabled" : ""}>Tailor CV</button>`);
+    out.push(`<select data-act="markother" data-id="${esc(j.id)}" aria-label="Mark as">
+      <option value="">Mark as…</option><option value="closed">Closed</option><option value="rejected">Not a fit</option>
+      <option value="duplicate">Duplicate</option><option value="needs_manual_review">Needs review</option></select>`);
+  } else if (j.bucket === "duplicates" && !j.orphan) {
+    if (!j.at) {
+      // detected (not logged): let the user confirm it so it stops showing up as pending
+      out.push(`<button class="btn" data-act="mark" data-status="duplicate" data-id="${esc(j.id)}">Confirm duplicate</button>`);
+    }
+    if (j.targetUrl && j.method !== "email") out.push(`<a class="btn" href="${esc(j.targetUrl)}" target="_blank" rel="noopener">Open link</a>`);
+  }
+  return out.join("");
+}
+
+function card(j) {
+  const chips = [];
+  chips.push(`<span class="chip ${STATUS_CHIP[j.status] ?? ""}">${esc((j.status || "").replace(/_/g, " "))}</span>`);
+  if (j.method) chips.push(`<span class="chip">${METHOD_LABEL[j.method] || esc(j.method)}${j.target ? ": " + esc(j.target.length > 48 ? j.target.slice(0, 46) + "…" : j.target) : ""}</span>`);
+  if (j.postedAt) chips.push(`<span class="chip">posted ${esc(j.postedAt)}</span>`);
+  if (j.at) chips.push(`<span class="chip">${j.status === "applied" ? "applied" : "logged"} ${esc(fmtDate(j.at))}</span>`);
+  if (j.channel) chips.push(`<span class="chip">@${esc(j.channel)}</span>`);
+  if (j.location) chips.push(`<span class="chip">${esc(j.location)}</span>`);
+  if (j.salary) chips.push(`<span class="chip">${esc(j.salary)}</span>`);
+  if (j.screen === "ambiguous") chips.push(`<span class="chip warn">work authorization unclear</span>`);
+  if (j.bucket === "new" && j.files) chips.push(j.files.cv && j.files.cover ? `<span class="chip ok">CV ready</span>` : `<span class="chip">CV not tailored</span>`);
+
+  const links = [];
+  if (j.postUrl) links.push(`<a href="${esc(j.postUrl)}" target="_blank" rel="noopener">Telegram post</a>`);
+  if (j.files && j.files.cv) links.push(`<a href="/files/${encodeURIComponent(j.id)}/cv" target="_blank">CV (PDF)</a>`);
+  if (j.files && j.files.cover) links.push(`<a href="/files/${encodeURIComponent(j.id)}/cover" target="_blank">Cover letter (PDF)</a>`);
+
+  return `<article class="card">
+    <div class="row">
+      <div class="main">
+        <p class="title">${esc(j.title || j.id)}</p>
+        <div class="company">${esc(j.company || "Company not stated")}</div>
+        <div class="meta">${chips.join("")}</div>
+        ${j.note ? `<div class="note">${esc(j.note)}</div>` : ""}
+        ${links.length ? `<div class="links">${links.join("")}</div>` : ""}
+        ${j.description ? `<details><summary>Post text</summary><pre class="desc">${esc(j.description)}</pre></details>` : ""}
+      </div>
+      <div class="actions">${actionsFor(j)}</div>
+    </div>
+  </article>`;
+}
+
+function render() {
+  renderTabs();
+  const rows = filtered();
+  if (!rows.length) {
+    $("list").innerHTML = `<div class="empty">Nothing here${$("q").value || $("method").value ? " for this filter" : ""}.</div>`;
+    return;
+  }
+  if (tab === "applied") {
+    // group the history by day
+    let html = "", day = null;
+    for (const j of rows) {
+      const d = (j.at || "").slice(0, 10) || "unknown date";
+      if (d !== day) { html += `<div class="group">${esc(d)}</div>`; day = d; }
+      html += card(j);
+    }
+    $("list").innerHTML = html;
+  } else {
+    $("list").innerHTML = rows.map(card).join("");
+  }
+  $("fetchBtn").disabled = busy;
+}
+
+function showTask(task) {
+  $("drawer").classList.add("open");
+  $("taskLabel").textContent = task.label;
+  const st = $("taskState");
+  st.textContent = task.state;
+  st.className = "chip " + (task.state === "done" ? "ok" : task.state === "failed" ? "bad" : "warn");
+  const out = $("taskOut");
+  const atBottom = out.scrollTop + out.clientHeight >= out.scrollHeight - 8;
+  out.textContent = task.output || "…";
+  if (atBottom) out.scrollTop = out.scrollHeight;
+}
+
+function follow(task) {
+  busy = true; render(); showTask(task);
+  clearInterval(pollTimer);
+  pollTimer = setInterval(async () => {
+    let t;
+    try { t = await api(`/api/task/${task.id}`); } catch (e) { return; }
+    showTask(t);
+    if (t.state === "done" || t.state === "failed") {
+      clearInterval(pollTimer); pollTimer = null;
+      await load();
+      if (t.jobId) {
+        const j = state.jobs.find((x) => x.id === t.jobId);
+        toast(j && j.status === "applied" ? "Applied ✓" : t.state === "failed" ? "Failed — see output" : "Finished");
+      } else toast(t.state === "done" ? "Done" : "Failed — see output");
+    }
+  }, 1000);
+}
+
+async function run(path, body) {
+  try { follow(await api(path, body)); } catch (e) { toast(e.message); }
+}
+
+async function mark(id, status) {
+  const j = state.jobs.find((x) => x.id === id);
+  const defaultNote = status === "applied" && j && j.method !== "email" ? `applied via ${j.method === "telegram" ? "Telegram DM " + (j.target || "") : (j.target || "link")}` : "";
+  const note = status === "applied" ? (prompt("Note for the log (optional):", defaultNote) ?? null) : "";
+  if (note === null) return;
+  try { await api("/api/mark", { id, status, note }); toast(`Marked ${status.replace(/_/g, " ")}`); await load(); }
+  catch (e) { toast(e.message); }
+}
+
+$("tabs").addEventListener("click", (e) => {
+  const b = e.target.closest(".tab"); if (!b) return;
+  tab = b.dataset.tab; try { localStorage.setItem("tab", tab); } catch {}
+  render();
+});
+$("list").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  const id = b.dataset.id;
+  if (b.dataset.act === "apply") {
+    const j = state.jobs.find((x) => x.id === id);
+    if (confirm(`Send the application for “${j.title}” to ${j.target}?`)) run("/api/apply", { id });
+  } else if (b.dataset.act === "prepare") run("/api/prepare", { id });
+  else if (b.dataset.act === "mark") mark(id, b.dataset.status);
+});
+$("list").addEventListener("change", (e) => {
+  const s = e.target.closest("select[data-act=markother]"); if (!s || !s.value) return;
+  const v = s.value; s.value = ""; mark(s.dataset.id, v);
+});
+$("q").addEventListener("input", render);
+$("method").addEventListener("change", render);
+$("reloadBtn").addEventListener("click", () => load().then(() => toast("Reloaded")));
+$("fetchBtn").addEventListener("click", () => run("/api/fetch", {}));
+$("taskClose").addEventListener("click", () => $("drawer").classList.remove("open"));
+
+load().catch((e) => { $("list").innerHTML = `<div class="empty">Couldn't load: ${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>
