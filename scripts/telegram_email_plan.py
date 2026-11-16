@@ -21,13 +21,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import ROOT, load_jobs, load_log, profile_field, read_profile, select_job  # noqa: E402
+from common import ROOT, DuplicateIndex, norm_title, load_jobs, load_log, profile_field, read_profile, select_job  # noqa: E402
 from fetch_telegram_jobs import TELEGRAM_JOBS_FILE, TELEGRAM_LOG_FILE  # noqa: E402
 from prepare_telegram_applications import STAGE_DIR, UPLOAD_NAME  # noqa: E402
 from tailor_cv import detect_lang, job_brief  # noqa: E402
 
-def norm(title: str) -> str:
-    return re.sub(r"\W+", " ", title or "").strip().lower()
+norm = norm_title  # kept for importers
 
 
 def message(job: dict, profile: str) -> tuple[str, str]:
@@ -60,13 +59,14 @@ def main():
     todo = ([select_job(jobs, args.job_id)] if args.job_id else
             [j for j in jobs if j["applyMethod"] == "email" and j["id"] not in logged])
     by_id = {j["id"]: j for j in jobs}
-    sent = {(by_id[i].get("applyTarget", "").lower(), norm(by_id[i]["title"]))
-            for i, e in logged.items() if e["status"] == "applied" and i in by_id}
+    seen = DuplicateIndex()
+    for i, e in logged.items():
+        if e["status"] == "applied" and i in by_id:
+            seen.add(by_id[i], "applied")
     for job in todo:
-        key = (job["applyTarget"].lower(), norm(job["title"]))
-        if key in sent:
-            # The same vacancy cross-posted in two channels: never email the same address twice for it.
-            print(f"DUPLICATE {job['id']}: already applied to {job['applyTarget']} for this title", file=sys.stderr)
+        dup = seen.find(job)
+        if dup:
+            print(f"DUPLICATE {job['id']}: {dup}", file=sys.stderr)
             continue
         stage = STAGE_DIR / job["id"]
         cv, cover = stage / UPLOAD_NAME, stage / "cover_letter.pdf"
@@ -76,7 +76,7 @@ def main():
         if missing:
             print(f"NOT READY {job['id']}: missing {', '.join(missing)}", file=sys.stderr)
             continue
-        sent.add(key)  # a cross-post pending in this same run is a duplicate too
+        seen.add(job, "queued")  # a cross-post pending in this same run is a duplicate too
         print(json.dumps({"id": job["id"], "to": job["applyTarget"], "subject": subject, "body": body,
                           "attachments": [str(cv.resolve()), str(cover.resolve())]}, ensure_ascii=False))
 

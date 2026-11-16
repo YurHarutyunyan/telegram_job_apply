@@ -150,3 +150,54 @@ def cover_upload_name() -> str:
     """The file name an employer sees for the cover letter: "<Full name> - Cover Letter.pdf"."""
     name = candidate_name()
     return f"{name} - Cover Letter.pdf" if name else "Cover Letter.pdf"
+
+
+# --- Duplicate detection -------------------------------------------------------------------------
+# Same recipient + same normalized title is only a *candidate* duplicate: one company often posts
+# different vacancies under one generic title ("Java Developer") to one HR address. It's a duplicate
+# only if the post text is also nearly the same. Real cross-posts and reposts measured 0.96-1.00.
+SAME_VACANCY_MIN_SIMILARITY = 0.85
+_URL_RE = re.compile(r"https?://\S+|t\.me/\S+|@\w+")
+
+
+def norm_title(title: str) -> str:
+    return re.sub(r"\W+", " ", title or "").strip().lower()
+
+
+def _norm_body(job: dict) -> str:
+    """Post text without links/handles (channel footers differ between cross-posts)."""
+    return re.sub(r"\W+", " ", _URL_RE.sub(" ", job.get("descriptionText") or "")).strip().lower()
+
+
+def description_similarity(a: dict, b: dict) -> float:
+    from difflib import SequenceMatcher
+    x, y = _norm_body(a), _norm_body(b)
+    if not x or not y:
+        return 1.0  # no text to tell them apart: fall back to recipient + title only
+    return SequenceMatcher(None, x, y, autojunk=False).ratio()
+
+
+class DuplicateIndex:
+    """Recipient + title + description match against applied jobs and earlier picks in this run."""
+
+    def __init__(self):
+        self._by_key: dict[tuple[str, str], list[tuple[dict, str]]] = {}
+
+    def add(self, job: dict, how: str) -> None:
+        """how: "applied" (in the log) or "queued" (picked earlier in this run)."""
+        key = ((job.get("applyTarget") or "").lower(), norm_title(job.get("title")))
+        self._by_key.setdefault(key, []).append((job, how))
+
+    def find(self, job: dict) -> str | None:
+        """A human-readable reason if job is a duplicate, else None."""
+        key = ((job.get("applyTarget") or "").lower(), norm_title(job.get("title")))
+        best = None
+        for other, how in self._by_key.get(key, []):
+            sim = description_similarity(job, other)
+            if sim >= SAME_VACANCY_MIN_SIMILARITY and (best is None or sim > best[0]):
+                best = (sim, other, how)
+        if best is None:
+            return None
+        sim, other, how = best
+        verb = "already applied" if how == "applied" else "same vacancy queued in this run"
+        return f"{verb} to {job['applyTarget']} ({other['id']}, same title, description {sim:.0%} similar)"
